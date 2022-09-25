@@ -173,6 +173,7 @@ ORDER BY
 */
 
 SELECT 
+		DISTINCT
 		Sales.Customers.CustomerID
 		, Sales.Customers.CustomerName
 		, Sales.Customers.PhoneNumber
@@ -187,8 +188,3 @@ ON Sales.OrderLines.OrderID = Sales.Orders.OrderID
 INNER JOIN Warehouse.StockItems
 ON Sales.OrderLines.StockItemID = Warehouse.StockItems.StockItemID
 AND Warehouse.StockItems.StockItemName = 'Chocolate frogs 250g'
-
-GROUP BY 
-		  Sales.Customers.CustomerID
-		, Sales.Customers.CustomerName
-		, Sales.Customers.PhoneNumber
