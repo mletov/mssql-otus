@@ -102,16 +102,7 @@ GROUP BY Sales.Orders.OrderID
 		, Sales.Customers.CustomerName
 
 ORDER BY 
-		 DATEPART(quarter, Sales.Orders.OrderDate)
-		 , (CASE
-			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 1 AND 4
-			THEN 1
-			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 5 AND 8
-			THEN 2
-			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 9 AND 12
-			THEN 3
-		  END)
-		  , Sales.Orders.OrderDate
+		 QuarterName,ThirdName,OrderDate
 
 OFFSET 1000 ROWS
 FETCH NEXT 100 ROWS ONLY		
