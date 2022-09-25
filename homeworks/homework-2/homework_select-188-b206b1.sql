@@ -94,13 +94,12 @@ INNER JOIN Sales.OrderLines
 ON Sales.Orders.OrderID = Sales.OrderLines.OrderID
 
 WHERE Sales.OrderLines.UnitPrice > 100
+AND Sales.OrderLines.Quantity > 20
 AND Sales.Orders.PickingCompletedWhen IS NOT NULL
 
 GROUP BY Sales.Orders.OrderID
 		, Sales.Orders.OrderDate
 		, Sales.Customers.CustomerName
-
-HAVING 	SUM(Sales.OrderLines.Quantity) > 20
 
 ORDER BY 
 		 DATEPART(quarter, Sales.Orders.OrderDate)
