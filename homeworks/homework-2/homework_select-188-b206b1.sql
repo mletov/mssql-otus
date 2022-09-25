@@ -24,7 +24,13 @@ USE WideWorldImporters
 Таблицы: Warehouse.StockItems.
 */
 
-напишите здесь свое решение
+SELECT 
+		StockItemID
+	  , StockItemName
+FROM Warehouse.StockItems
+WHERE
+		StockItemName LIKE '%urgent%'
+		OR StockItemName LIKE 'Animal%' 
 
 /*
 2. Поставщиков (Suppliers), у которых не было сделано ни одного заказа (PurchaseOrders).
@@ -34,7 +40,16 @@ USE WideWorldImporters
 По каким колонкам делать JOIN подумайте самостоятельно.
 */
 
-напишите здесь свое решение
+SELECT 
+		Purchasing.Suppliers.SupplierID
+	  , Purchasing.Suppliers.SupplierName
+FROM Purchasing.Suppliers
+LEFT JOIN Purchasing.PurchaseOrders
+ON 
+	Purchasing.Suppliers.SupplierID = Purchasing.PurchaseOrders.SupplierID
+WHERE 
+		Purchasing.PurchaseOrders.SupplierID IS NULL
+
 
 /*
 3. Заказы (Orders) с ценой товара (UnitPrice) более 100$ 
@@ -55,7 +70,53 @@ USE WideWorldImporters
 Таблицы: Sales.Orders, Sales.OrderLines, Sales.Customers.
 */
 
-напишите здесь свое решение
+
+SELECT 
+		Sales.Orders.OrderID
+		, FORMAT(Sales.Orders.OrderDate, 'dd.MM.yyyy') AS OrderDate
+		, FORMAT(Sales.Orders.OrderDate, 'MMMM') AS MonthName
+		, DATEPART(quarter, Sales.Orders.OrderDate) AS QuarterName
+		, (CASE
+			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 1 AND 4
+			THEN 1
+			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 5 AND 8
+			THEN 2
+			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 9 AND 12
+			THEN 3
+		  END) AS ThirdName
+		, Sales.Customers.CustomerName
+FROM Sales.Orders
+
+INNER JOIN Sales.Customers
+ON Sales.Orders.CustomerID = Sales.Customers.CustomerID
+
+INNER JOIN Sales.OrderLines
+ON Sales.Orders.OrderID = Sales.OrderLines.OrderID
+
+WHERE Sales.OrderLines.UnitPrice > 100
+AND Sales.Orders.PickingCompletedWhen IS NOT NULL
+
+GROUP BY Sales.Orders.OrderID
+		, Sales.Orders.OrderDate
+		, Sales.Customers.CustomerName
+
+HAVING 	SUM(Sales.OrderLines.Quantity) > 20
+
+ORDER BY 
+		 DATEPART(quarter, Sales.Orders.OrderDate)
+		 , (CASE
+			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 1 AND 4
+			THEN 1
+			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 5 AND 8
+			THEN 2
+			WHEN MONTH(Sales.Orders.OrderDate) BETWEEN 9 AND 12
+			THEN 3
+		  END)
+		  , Sales.Orders.OrderDate
+
+OFFSET 1000 ROWS
+FETCH NEXT 100 ROWS ONLY		
+
 
 /*
 4. Заказы поставщикам (Purchasing.Suppliers),
@@ -71,7 +132,28 @@ USE WideWorldImporters
 Таблицы: Purchasing.Suppliers, Purchasing.PurchaseOrders, Application.DeliveryMethods, Application.People.
 */
 
-напишите здесь свое решение
+SELECT 
+		Application.DeliveryMethods.DeliveryMethodName
+		, Purchasing.PurchaseOrders.ExpectedDeliveryDate
+		, Purchasing.Suppliers.SupplierName
+		, Application.People.FullName AS ContactPersonName
+FROM Purchasing.PurchaseOrders
+
+INNER JOIN Application.DeliveryMethods
+ON Purchasing.PurchaseOrders.DeliveryMethodID = Application.DeliveryMethods.DeliveryMethodID
+
+INNER JOIN [Purchasing].[Suppliers]
+ON Purchasing.PurchaseOrders.SupplierID = [Purchasing].[Suppliers].SupplierID
+
+INNER JOIN Application.People
+ON Purchasing.PurchaseOrders.ContactPersonId =  Application.People.PersonID
+
+WHERE 
+		YEAR(Purchasing.PurchaseOrders.ExpectedDeliveryDate) = 2013
+		AND MONTH(Purchasing.PurchaseOrders.ExpectedDeliveryDate) = 1
+		AND Application.DeliveryMethods.DeliveryMethodName IN ('Air Freight', 'Refrigerated Air Freight')
+		AND Purchasing.PurchaseOrders.IsOrderFinalized = 1
+
 
 /*
 5. Десять последних продаж (по дате продажи) с именем клиента и именем сотрудника,
@@ -79,7 +161,20 @@ USE WideWorldImporters
 Сделать без подзапросов.
 */
 
-напишите здесь свое решение
+SELECT TOP(10)		
+		Sales.Customers.CustomerName
+	  , Application.People.FullName
+		
+FROM Sales.Orders
+
+INNER JOIN Sales.Customers
+ON Sales.Orders.CustomerID = Sales.Customers.CustomerID
+
+INNER JOIN Application.People
+ON Sales.Orders.SalespersonPersonID = Application.People.PersonID
+
+ORDER BY 
+			Sales.Orders.OrderDate DESC
 
 /*
 6. Все ид и имена клиентов и их контактные телефоны,
@@ -87,4 +182,23 @@ USE WideWorldImporters
 Имя товара смотреть в таблице Warehouse.StockItems.
 */
 
-напишите здесь свое решение
+SELECT 
+		Sales.Customers.CustomerID
+		, Sales.Customers.CustomerName
+		, Sales.Customers.PhoneNumber
+FROM Sales.Customers
+
+INNER JOIN Sales.Orders
+ON Sales.Orders.CustomerID = Sales.Customers.CustomerID
+
+INNER JOIN Sales.OrderLines
+ON Sales.OrderLines.OrderID = Sales.Orders.OrderID
+
+INNER JOIN Warehouse.StockItems
+ON Sales.OrderLines.StockItemID = Warehouse.StockItems.StockItemID
+AND Warehouse.StockItems.StockItemName = 'Chocolate frogs 250g'
+
+GROUP BY 
+		  Sales.Customers.CustomerID
+		, Sales.Customers.CustomerName
+		, Sales.Customers.PhoneNumber
