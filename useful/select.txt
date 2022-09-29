@@ -1,0 +1,14 @@
+SET STATISTICT TIME ON - посмотреть нагрузку на CPU
+
+
+WITH TIES почитать
+
+
+SET DATEFORMAT
+
+Sys.languages - список языков
+
+SET_CONCAT_YELDS_NULL
+
+
+option force order - иначе сам определяет порядо джоинов

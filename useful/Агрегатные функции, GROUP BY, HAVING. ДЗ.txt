@@ -1,0 +1,17 @@
+'N - в юникоде
+
+SELECT *
+FROM (VALUES ('a', 1), ('b', 2), ('c', 3)) AS tbl (col1, col2) - очень легкий по сравнению с union
+
+union all быстрее union
+
+Можно писать свои агрегатные функции
+
+COUNT(DISTINCT id) vs COUNT(ALL id)
+
+
+GROUPING SETS - почитать
+
+ROLLUP - сумма по всем группа, GROUPING -позволяет понять что есть пром итги, а не обычная строчка
+
+BY CUBE - по всем полям, ROLLUP - по одному полю
