@@ -1,0 +1,26 @@
+Не выгодно искать идеальный план, это очень долго
+План основан на статистике данных в таблицах
+Estimated & Actual plan
+Надо выделать память на запрос заранее
+
+Читаем запрос с права налево
+
+SET STATICS PROFILE ON
+SET STATICS XML ON
+
+
+SET SHOW_PLAN_TEXT ON - предполагаемый план
+
+
+QUERY->Display estimated plan
+QUERY->Display execution plan
+live query statistics - наюлюдать вживую дял больших запросов
+
+estimated subtree cost
+
+План выполненяи можн осохранить в XML
+
+
+Compare show plan выбрать 2 файла
+
+Можн опосмотреть историю планов запросом
