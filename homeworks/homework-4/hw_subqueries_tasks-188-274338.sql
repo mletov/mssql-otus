@@ -123,10 +123,10 @@ SELECT DISTINCT
 		[Application].[Cities].CityID
 		, [Application].[Cities].CityName
 		, [Sales].[Invoices].PackedByPersonID
-FROM [Purchasing].[PurchaseOrderLines]
+FROM [Sales].[OrderLines]
 
 JOIN [Sales].[Orders]
-ON [Sales].[Orders].OrderId = [Purchasing].[PurchaseOrderLines].PurchaseOrderID
+ON [Sales].[Orders].OrderId = [Sales].[OrderLines].OrderID
 
 JOIN [Sales].[Customers]
 ON [Sales].[Customers].CustomerID = [Sales].[Orders].CustomerID
@@ -138,7 +138,7 @@ ON [Application].[Cities].CityID = [Sales].[Customers].DeliveryCityID
 JOIN [Sales].[Invoices]
 ON [Sales].[Invoices].OrderID = [Sales].[Orders].OrderID
 
-WHERE [Purchasing].[PurchaseOrderLines].StockItemID IN
+WHERE [Sales].[OrderLines].StockItemID IN
 (
 	SELECT TOP(3) StockItemID
 	FROM Warehouse.StockItems
