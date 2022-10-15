@@ -1,0 +1,11 @@
+DECLARE @Variable INT
+
+SELECT 
+		@Variable = val
+FROM table
+
+
+EXEC ('SELECT * FROM t')
+
+DECLARE @i INT
+STR(@i)
