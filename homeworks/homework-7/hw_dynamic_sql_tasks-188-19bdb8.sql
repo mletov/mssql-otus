@@ -42,11 +42,25 @@ InvoiceMonth | Aakriti Byrraju    | Abel Spirlea       | Abel Tatarescu | ... (�
 */
 
 
--- Вариант 1, работает только с ограничением id < 1000
+IF OBJECT_ID('tempdb..#tmp_Customers') IS NOT NULL BEGIN DROP TABLE #tmp_Customers; END
+ 
+SELECT *
+INTO #tmp_Customers
+FROM
+(
+	SELECT *
+	FROM [Sales].[Customers]
+	WHERE CustomerID IN
+	(
+		SELECT CustomerID
+		FROM [Sales].[Invoices]
+	)
+) AS t1
+				
 DECLARE @Query NVARCHAR(MAX), @Fields NVARCHAR(MAX), @Fields2 NVARCHAR(MAX);
 
-SET @Fields = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName FROM [Sales].[Customers] WHERE [Sales].[Customers].CustomerID < 1000);
-SET @Fields2 = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName FROM [Sales].[Customers] WHERE [Sales].[Customers].CustomerID < 1000);
+SET @Fields = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
+SET @Fields2 = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
 
 SET @Query = '  WITH cte
 				AS
@@ -54,25 +68,25 @@ SET @Query = '  WITH cte
 						SELECT 
 								CustomerID
 								, CustomerName
-								, OrderDate
+								, InvoiceDate
 								, COUNT(CustomerID) AS CntOrders
 								FROM
 								(
 									SELECT 
-											  [Sales].[Customers].CustomerID
-											, [Sales].[Customers].CustomerName
-											, DATEADD(month, DATEDIFF(month, 0, [Sales].[Orders].OrderDate), 0) AS OrderDate
+											  #tmp_Customers.CustomerID
+											, #tmp_Customers.CustomerName
+											, DATEADD(month, DATEDIFF(month, 0, [Sales].[Invoices].InvoiceDate), 0) AS InvoiceDate
 
-									FROM [Sales].[Orders]
+									FROM [Sales].[Invoices]
 
-									JOIN [Sales].[Customers]
-									ON [Sales].[Orders].CustomerID = [Sales].[Customers].CustomerID
+									JOIN #tmp_Customers
+									ON [Sales].[Invoices].CustomerID = #tmp_Customers.CustomerID
 							) AS t1
 							GROUP BY 
 					
 									CustomerID
 									, CustomerName
-									, OrderDate
+									, InvoiceDate
 				)
 
 				SELECT    
@@ -82,7 +96,7 @@ SET @Query = '  WITH cte
 				(
 					SELECT 
 							CustomerName
-						  , FORMAT (OrderDate, ''dd.MM.yyyy'') AS MonthFirstDay
+						  , FORMAT (InvoiceDate, ''dd.MM.yyyy'') AS MonthFirstDay
 						  , CntOrders
 					FROM cte
 				) AS SourceTable  
@@ -99,57 +113,6 @@ EXEC sp_executesql  @Query
 
 
 
--- Вариант 2, со всеми клиентами, но без форматирвоания даты
-DECLARE @Query NVARCHAR(MAX), @Fields NVARCHAR(MAX), @Fields2 NVARCHAR(MAX);
-
-SET @Fields = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName FROM [Sales].[Customers]);
-SET @Fields2 = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName FROM [Sales].[Customers]);
-
-SET @Query = '  WITH cte
-				AS
-				(
-						SELECT 
-								CustomerID
-								, CustomerName
-								, OrderDate
-								, COUNT(CustomerID) AS CntOrders
-								FROM
-								(
-									SELECT 
-											  [Sales].[Customers].CustomerID
-											, [Sales].[Customers].CustomerName
-											, DATEADD(month, DATEDIFF(month, 0, [Sales].[Orders].OrderDate), 0) AS OrderDate
-
-									FROM [Sales].[Orders]
-
-									JOIN [Sales].[Customers]
-									ON [Sales].[Orders].CustomerID = [Sales].[Customers].CustomerID
-							) AS t1
-							GROUP BY 
-					
-									CustomerID
-									, CustomerName
-									, OrderDate
-				)
-
-				SELECT    
-					MonthFirstDay
-				  , ' + @Fields2 + '
-				FROM  
-				(
-					SELECT 
-							CustomerName
-						  , OrderDate AS MonthFirstDay
-						  , CntOrders
-					FROM cte
-				) AS SourceTable  
-				PIVOT  
-				( 
-				  SUM(CntOrders)
-				  FOR CustomerName IN (' + @Fields + ')  
-				) AS PivotTable;';
-
-EXEC sp_executesql  @Query
 
 
 
