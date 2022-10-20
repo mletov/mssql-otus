@@ -41,7 +41,54 @@ InvoiceMonth | Aakriti Byrraju    | Abel Spirlea       | Abel Tatarescu | ... (�
 -------------+--------------------+--------------------+----------------+----------------------
 */
 
+-- Вариант 1
+IF OBJECT_ID('tempdb..#tmp_Customers') IS NOT NULL BEGIN DROP TABLE #tmp_Customers; END
+ 
+SELECT *
+INTO #tmp_Customers
+FROM
+(
+	SELECT *
+	FROM [Sales].[Customers]
+	WHERE CustomerID IN
+	(
+		SELECT CustomerID
+		FROM [Sales].[Invoices]
+	)
+) AS t1
 
+DECLARE @Query NVARCHAR(MAX), @Fields NVARCHAR(MAX), @Fields2 NVARCHAR(MAX);
+SET @Fields = (SELECT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
+SET @Fields2 = (SELECT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
+
+SET @Query = '  SELECT    
+					InvoiceMonth
+				  , ' + @Fields2 + '
+				FROM  
+				(
+					SELECT 
+							  c.CustomerID
+							, c.CustomerName
+							, CONVERT(nvarchar,CAST(DATEADD(month,DATEDIFF(month,0,i.InvoiceDate),0) as date),104) AS InvoiceMonth
+
+					FROM [Sales].[Invoices] AS i
+
+					JOIN #tmp_Customers AS c
+					ON i.CustomerID = c.CustomerID
+									
+				) AS SourceTable  
+				PIVOT  
+				( 
+					COUNT(CustomerID)
+					FOR CustomerName IN (' + @Fields + ')  
+				) AS PivotTable;';
+
+EXEC sp_executesql  @Query
+
+
+
+
+-- Вариант 2
 IF OBJECT_ID('tempdb..#tmp_Customers') IS NOT NULL BEGIN DROP TABLE #tmp_Customers; END
  
 SELECT *
@@ -59,8 +106,8 @@ FROM
 				
 DECLARE @Query NVARCHAR(MAX), @Fields NVARCHAR(MAX), @Fields2 NVARCHAR(MAX);
 
-SET @Fields = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
-SET @Fields2 = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
+SET @Fields = (SELECT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
+SET @Fields2 = (SELECT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName FROM #tmp_Customers);
 
 SET @Query = '  WITH cte
 				AS
@@ -87,25 +134,37 @@ SET @Query = '  WITH cte
 									CustomerID
 									, CustomerName
 									, InvoiceDate
-				)
-
-				SELECT    
-					MonthFirstDay
-				  , ' + @Fields2 + '
-				FROM  
+				),
+				cte2 AS
 				(
 					SELECT 
-							CustomerName
-						  , FORMAT (InvoiceDate, ''dd.MM.yyyy'') AS MonthFirstDay
-						  , CntOrders
-					FROM cte
-				) AS SourceTable  
-				PIVOT  
-				( 
-				  SUM(CntOrders)
-				  FOR CustomerName IN (' + @Fields + ')  
-				) AS PivotTable;';
-
+						  FORMAT (MonthFirstDay, ''dd.MM.yyyy'') AS MonthFirstDay
+						, ' + @Fields + '
+					FROM
+					(
+						SELECT    
+							MonthFirstDay
+						  , ' + @Fields2 + '
+						FROM  
+						(
+							SELECT 
+									CustomerName
+								  , InvoiceDate AS MonthFirstDay
+								  , CntOrders
+							FROM cte
+						) AS SourceTable  
+						PIVOT  
+						( 
+						  SUM(CntOrders)
+						  FOR CustomerName IN (' + @Fields + ')  
+						) AS PivotTable
+				   ) AS t1
+			   )
+			   
+			   SELECT *
+			   FROM cte2
+			   ';
+				
 EXEC sp_executesql  @Query
 
 
@@ -124,190 +183,18 @@ EXEC sp_executesql  @Query
 
 
 
-/*
-
-IF OBJECT_ID('tempdb..#tmp_Customers') IS NOT NULL BEGIN DROP TABLE #tmp_Customers; END
-
-SELECT *
-INTO #tmp_Customers
-FROM
-(
-
-	SELECT 
-			*
-			, ROW_NUMBER() OVER(ORDER BY CustomerID) AS Rn
-	FROM [Sales].[Customers]
-) AS t1
-
-
-DECLARE @Query NVARCHAR(MAX), @QueryCte NVARCHAR(MAX), @QueryJoin NVARCHAR(MAX), @Fields NVARCHAR(MAX), @Fields2 NVARCHAR(MAX), @Pos INT = 1, @Limit INT = 100, @MaxRowNum INT;
-
-
-SET @MaxRowNum = (SELECT MAX(Rn) AS Rn FROM #tmp_Customers);
-
-SET @QueryCte = '  WITH cte_Dates
-					AS
-					(
-						SELECT DISTINCT DATEADD(month, DATEDIFF(month, 0, [Sales].[Orders].OrderDate), 0) AS OrderDate
-						FROM [Sales].[Orders]
-					), cte_Customets
-					AS
-					(
-							SELECT 
-									CustomerID
-									, CustomerName
-									, OrderDate
-									, COUNT(CustomerID) AS CntOrders
-									FROM
-									(
-										SELECT 
-												  [Sales].[Customers].CustomerID
-												, [Sales].[Customers].CustomerName
-												, DATEADD(month, DATEDIFF(month, 0, [Sales].[Orders].OrderDate), 0) AS OrderDate
-
-										FROM [Sales].[Orders]
-
-										JOIN [Sales].[Customers]
-										ON [Sales].[Orders].CustomerID = [Sales].[Customers].CustomerID
-								) AS t1
-								GROUP BY 
-						
-										CustomerID
-										, CustomerName
-										, OrderDate
-					)';
-					
-
-WHILE ( @Pos <= @MaxRowNum)
-BEGIN
-	SET @Fields = (
-						SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName 
-						FROM #tmp_Customers 
-						WHERE Rn BETWEEN @Pos AND (@Pos + @Limit - 1)
-					);
-	SET @Fields2 = (
-						SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName 
-						FROM #tmp_Customers 
-						WHERE Rn BETWEEN @Pos AND (@Pos + @Limit - 1)
-					);
-
-	SET @QueryCte =  @QueryCte + ',
-	cte_' + CAST(@Pos AS NVARCHAR(MAX)) + '
-	AS 
-	(
-		SELECT    
-			MonthFirstDay
-			, ' + @Fields2 + '
-		FROM  
-		(
-			SELECT 
-					CustomerName
-					, FORMAT (OrderDate, ''dd.MM.yyyy'') AS MonthFirstDay
-					, CntOrders
-			FROM cte
-		) AS SourceTable  
-		PIVOT  
-		( 
-			SUM(CntOrders)
-			FOR CustomerName IN (' + @Fields + ')  
-		) AS PivotTable;
-	)';
-
-	PRINT @Pos
-
-    SET @Pos  = @Pos  + @Limit;
-END	
 
 
 
-IF OBJECT_ID('tempdb..#tmp_Customers') IS NOT NULL BEGIN DROP TABLE #tmp_Customers; END
 
 
-SELECT *
-INTO #tmp_Customers
-FROM
-(
-
-	SELECT 
-			*
-			, ROW_NUMBER() OVER(ORDER BY ) AS Rn
-	FROM [Sales].[Customers]
-) AS 
-
-DECLARE @Query NVARCHAR(MAX), @QueryCte NVARCHAR(MAX), @QueryJoin NVARCHAR(MAX), @Fields NVARCHAR(MAX), @Fields2 NVARCHAR(MAX), @Pos INT = 1, @Limit INT = 1000, @MaxRowNum INT;
-
-SET @MaxRowNum = (SELECT MAX(Rn) AS Rn FROM #tmp_Customers);
-
-SET @QueryCte = '  WITH cte_Dates
-					AS
-					(
-						SELECT DISTINCT DATEADD(month, DATEDIFF(month, 0, [Sales].[Orders].OrderDate), 0) AS OrderDate
-						FROM [Sales].[Orders]
-					), cte_Customets
-					AS
-					(
-							SELECT 
-									CustomerID
-									, CustomerName
-									, OrderDate
-									, COUNT(CustomerID) AS CntOrders
-									FROM
-									(
-										SELECT 
-												  [Sales].[Customers].CustomerID
-												, [Sales].[Customers].CustomerName
-												, DATEADD(month, DATEDIFF(month, 0, [Sales].[Orders].OrderDate), 0) AS OrderDate
-
-										FROM [Sales].[Orders]
-
-										JOIN [Sales].[Customers]
-										ON [Sales].[Orders].CustomerID = [Sales].[Customers].CustomerID
-								) AS t1
-								GROUP BY 
-						
-										CustomerID
-										, CustomerName
-										, OrderDate
-					);';
-					
-
-WHILE ( @Pos <= @MaxRowNum)
-BEGIN
-	SET @Fields = (
-						SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName 
-						FROM #tmp_Customers 
-						WHERE Rn BETWEEN @Pos AND (@Pos + @Limit - 1)
-					);
-	SET @Fields2 = (
-						SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName 
-						FROM #tmp_Customers 
-						WHERE Rn BETWEEN @Pos AND (@Pos + @Limit - 1)
-					);
 
 
-    SET @Pos  = @Pos  + @Limit;
-END					
-					
-					
-SET @Fields = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('[', CustomerName, ']')), ', ' ) AS CustomerName FROM [Sales].[Customers] WHERE [Sales].[Customers].CustomerID < 1000);
-SET @Fields2 = (SELECT DISTINCT STRING_AGG(CONVERT(NVARCHAR(MAX), CONCAT('ISNULL([', CustomerName, '], 0) AS [', CustomerName, ']')), ', ' ) AS CustomerName FROM [Sales].[Customers] WHERE [Sales].[Customers].CustomerID < 1000);
 
-SET @Query =  @Query + '
-				SELECT    
-					MonthFirstDay
-				  , ' + @Fields2 + '
-				FROM  
-				(
-					SELECT 
-							CustomerName
-						  , FORMAT (OrderDate, ''dd.MM.yyyy'') AS MonthFirstDay
-						  , CntOrders
-					FROM cte
-				) AS SourceTable  
-				PIVOT  
-				( 
-				  SUM(CntOrders)
-				  FOR CustomerName IN (' + @Fields + ')  
-				) AS PivotTable;';
 
-EXEC sp_executesql  @Query*/
+
+
+
+
+
+
