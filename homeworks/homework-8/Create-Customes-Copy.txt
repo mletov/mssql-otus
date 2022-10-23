@@ -1,0 +1,128 @@
+USE [WideWorldImporters]
+GO
+
+/****** Object:  Table [Sales].[CustomersNew]    Script Date: 23.10.2022 16:36:16 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [Sales].[CustomersNew](
+	[CustomerID] [int] NOT NULL,
+	[CustomerName] [nvarchar](100) NOT NULL,
+	[BillToCustomerID] [int] NOT NULL,
+	[CustomerCategoryID] [int] NOT NULL,
+	[BuyingGroupID] [int] NULL,
+	[PrimaryContactPersonID] [int] NOT NULL,
+	[AlternateContactPersonID] [int] NULL,
+	[DeliveryMethodID] [int] NOT NULL,
+	[DeliveryCityID] [int] NOT NULL,
+	[PostalCityID] [int] NOT NULL,
+	[CreditLimit] [decimal](18, 2) NULL,
+	[AccountOpenedDate] [date] NOT NULL,
+	[StandardDiscountPercentage] [decimal](18, 3) NOT NULL,
+	[IsStatementSent] [bit] NOT NULL,
+	[IsOnCreditHold] [bit] NOT NULL,
+	[PaymentDays] [int] NOT NULL,
+	[PhoneNumber] [nvarchar](20) NOT NULL,
+	[FaxNumber] [nvarchar](20) NOT NULL,
+	[DeliveryRun] [nvarchar](5) NULL,
+	[RunPosition] [nvarchar](5) NULL,
+	[WebsiteURL] [nvarchar](256) NOT NULL,
+	[DeliveryAddressLine1] [nvarchar](60) NOT NULL,
+	[DeliveryAddressLine2] [nvarchar](60) NULL,
+	[DeliveryPostalCode] [nvarchar](10) NOT NULL,
+	[DeliveryLocation] [geography] NULL,
+	[PostalAddressLine1] [nvarchar](60) NOT NULL,
+	[PostalAddressLine2] [nvarchar](60) NULL,
+	[PostalPostalCode] [nvarchar](10) NOT NULL,
+	[LastEditedBy] [int] NOT NULL,
+	[ValidFrom] [datetime2](7) GENERATED ALWAYS AS ROW START NOT NULL,
+	[ValidTo] [datetime2](7) GENERATED ALWAYS AS ROW END NOT NULL,
+ CONSTRAINT [PK_Sales_CustomersNew] PRIMARY KEY CLUSTERED 
+(
+	[CustomerID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [USERDATA],
+ CONSTRAINT [UQ_Sales_CustomersNew_CustomerName] UNIQUE NONCLUSTERED 
+(
+	[CustomerName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [USERDATA],
+	PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo])
+) ON [USERDATA] TEXTIMAGE_ON [USERDATA]
+WITH
+(
+SYSTEM_VERSIONING = ON ( HISTORY_TABLE = [Sales].[CustomersNew_Archive] )
+)
+GO
+
+ALTER TABLE [Sales].[CustomersNew] ADD  CONSTRAINT [DF_Sales_CustomersNew_CustomerID]  DEFAULT (NEXT VALUE FOR [Sequences].[CustomerID]) FOR [CustomerID]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_AlternateContactPersonID_Application_People] FOREIGN KEY([AlternateContactPersonID])
+REFERENCES [Application].[People] ([PersonID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_AlternateContactPersonID_Application_People]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_Application_People] FOREIGN KEY([LastEditedBy])
+REFERENCES [Application].[People] ([PersonID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_Application_People]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_BillToCustomerID_Sales_CustomersNew] FOREIGN KEY([BillToCustomerID])
+REFERENCES [Sales].[CustomersNew] ([CustomerID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_BillToCustomerID_Sales_CustomersNew]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_BuyingGroupID_Sales_BuyingGroups] FOREIGN KEY([BuyingGroupID])
+REFERENCES [Sales].[BuyingGroups] ([BuyingGroupID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_BuyingGroupID_Sales_BuyingGroups]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_CustomerCategoryID_Sales_CustomerCategories] FOREIGN KEY([CustomerCategoryID])
+REFERENCES [Sales].[CustomerCategories] ([CustomerCategoryID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_CustomerCategoryID_Sales_CustomerCategories]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_DeliveryCityID_Application_Cities] FOREIGN KEY([DeliveryCityID])
+REFERENCES [Application].[Cities] ([CityID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_DeliveryCityID_Application_Cities]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_DeliveryMethodID_Application_DeliveryMethods] FOREIGN KEY([DeliveryMethodID])
+REFERENCES [Application].[DeliveryMethods] ([DeliveryMethodID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_DeliveryMethodID_Application_DeliveryMethods]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_PostalCityID_Application_Cities] FOREIGN KEY([PostalCityID])
+REFERENCES [Application].[Cities] ([CityID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_PostalCityID_Application_Cities]
+GO
+
+ALTER TABLE [Sales].[CustomersNew]  WITH NOCHECK ADD  CONSTRAINT [FK_Sales_CustomersNew_PrimaryContactPersonID_Application_People] FOREIGN KEY([PrimaryContactPersonID])
+REFERENCES [Application].[People] ([PersonID])
+GO
+
+ALTER TABLE [Sales].[CustomersNew] CHECK CONSTRAINT [FK_Sales_CustomersNew_PrimaryContactPersonID_Application_People]
+GO
+
+
+GO
+
+

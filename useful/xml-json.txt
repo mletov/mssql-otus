@@ -1,0 +1,4 @@
+XML 
+
+AS comment() - генерит комментарий
+xquery \ xpath лучше чем OPENXML
