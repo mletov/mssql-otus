@@ -1,0 +1,13 @@
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\bin\Debug\ConsoleApp2.exe.config
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\bin\Debug\ConsoleApp2.exe
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\bin\Debug\ConsoleApp2.pdb
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\bin\Debug\HomeWork22.dll
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\bin\Debug\HomeWork22.pdb
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\obj\Debug\ConsoleApp2.csproj.AssemblyReference.cache
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\obj\Debug\ConsoleApp2.csproj.SuggestedBindingRedirects.cache
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\obj\Debug\ConsoleApp2.csproj.CoreCompileInputs.cache
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\obj\Debug\ConsoleApp2.csproj.CopyComplete
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\obj\Debug\ConsoleApp2.exe
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\obj\Debug\ConsoleApp2.pdb
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\bin\Debug\Newtonsoft.Json.dll
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\ConsoleApp2\bin\Debug\Newtonsoft.Json.xml

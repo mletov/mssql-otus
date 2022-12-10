@@ -1,0 +1,6 @@
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\HomeWork22\bin\Debug\HomeWork22.dll
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\HomeWork22\bin\Debug\HomeWork22.pdb
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\HomeWork22\obj\Debug\HomeWork22.csproj.AssemblyReference.cache
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\HomeWork22\obj\Debug\HomeWork22.csproj.CoreCompileInputs.cache
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\HomeWork22\obj\Debug\HomeWork22.dll
+F:\DB\OTUS\mssql-otus\homeworks\homework-22\HomeWork22\HomeWork22\obj\Debug\HomeWork22.pdb
